@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Watch - UX Design 2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: radial-gradient(circle at top left, #ff9a9e 0%, #667eea 40%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .watch-container {
+            position: relative;
+            width: 320px;
+            height: 380px;
+            background: #111;
+            border-radius: 60px;
+            box-shadow:
+                0 30px 90px rgba(0,0,0,0.6),
+                inset 0 0 0 8px #222,
+                inset 0 0 40px rgba(255,255,255,0.03);
+            overflow: hidden;
+        }
+
+        .watch-screen {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            bottom: 20px;
+            background: radial-gradient(circle at top, #222 0%, #000 50%, #000 100%);
+            border-radius: 45px;
+            overflow: hidden;
+        }
+
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 15px;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            background: linear-gradient(90deg, rgba(0,0,0,0.7), rgba(0,0,0,0.2));
+            z-index: 2;
+            position: relative;
+        }
+
+        .time {
+            color: #ff375f;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            animation: fadeIn 0.25s ease;
+            position: relative;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Scroll-Bereich für Detail-Screens */
+        .scroll-area {
+            position: absolute;
+            top: 36px; /* unter der Statusbar */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97) translateY(4px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.15); }
+        }
+
+        /* Home Screen */
+        .home-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 18px 16px 40px;
+        }
+
+        .profile-card {
+            background: linear-gradient(135deg, rgba(102,126,234,0.9) 0%, rgba(118,75,162,0.95) 100%);
+            border-radius: 20px;
+            padding: 18px;
+            width: 100%;
+            margin: 8px 0 14px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            animation: slideInUp 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-card::after {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(255,255,255,0.35), transparent 60%);
+            opacity: 0.9;
+        }
+
+        .profile-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(255,255,255,0.16);
+            border-radius: 50%;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            animation: pulse 2s infinite;
+            backdrop-filter: blur(10px);
+        }
+
+        .profile-card h2 {
+            color: #fff;
+            font-size: 17px;
+            margin: 4px 0;
+        }
+
+        .profile-card p {
+            color: rgba(255,255,255,0.85);
+            font-size: 11px;
+        }
+
+        .profile-tagline {
+            margin-top: 8px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .app-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            padding: 6px 4px;
+            width: 100%;
+        }
+
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .app-icon span {
+            transform: translateY(2px);
+        }
+
+        .app-label {
+            position: absolute;
+            bottom: 5px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 8px;
+            color: rgba(255,255,255,0.9);
+            text-shadow: 0 0 3px rgba(0,0,0,0.7);
+        }
+
+        .app-glow {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top, rgba(255,255,255,0.35), transparent 60%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .app-icon:hover {
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        }
+
+        .app-icon:active {
+            transform: scale(0.96) translateY(0);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+        }
+
+        .app-icon:hover .app-glow {
+            opacity: 1;
+        }
+
+        .icon-health { background: linear-gradient(135deg, #ff6b6b, #ee5a6f); }
+        .icon-vitals { background: linear-gradient(135deg, #4ecdc4, #44a3a5); }
+        .icon-exercise { background: linear-gradient(135deg, #95e1d3, #38ada9); }
+        .icon-medication { background: linear-gradient(135deg, #a8e6cf, #3da98a); }
+        .icon-empty { background: linear-gradient(135deg, #485563, #29323c); }
+
+        /* EKG Screen */
+        .ekg-screen {
+            padding: 18px 18px 26px;
+            color: #fff;
+        }
+
+        .ekg-header {
+            text-align: center;
+            margin: 4px 0 16px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .ekg-header h2 {
+            font-size: 15px;
+            color: #ff375f;
+            margin-bottom: 3px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .ekg-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: #fff;
+            transition: transform 0.15s ease;
+        }
+
+        .ekg-label {
+            font-size: 11px;
+            color: #888;
+            margin-top: -4px;
+        }
+
+        .ekg-graph {
+            width: 100%;
+            height: 120px;
+            background: radial-gradient(circle at top, #161616 0%, #050505 70%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            margin: 12px 0 18px;
+            animation: slideInUp 0.45s ease;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .ekg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px);
+            background-size: 12px 12px;
+            opacity: 0.15;
+        }
+
+        .ekg-line {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background:
+                linear-gradient(90deg, transparent 0 12%, #ff375f 12% 13%, transparent 13% 18%, #ff375f 18% 19%, transparent 19% 25%, #ff375f 25% 26%, transparent 26% 42%, #ff375f 42% 43%, transparent 43% 52%, #ff375f 52% 53%, transparent 53% 60%, #ff375f 60% 61%, transparent 61% 100%);
+            animation: ekgPulse 1.8s infinite linear;
+            opacity: 0.9;
+            filter: drop-shadow(0 0 10px #ff375f);
+        }
+
+        @keyframes ekgPulse {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        .ekg-status {
+            text-align: center;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, rgba(255, 55, 95, 0.15), rgba(255, 55, 95, 0.03));
+            border-radius: 12px;
+            animation: slideInUp 0.6s ease;
+            font-size: 11px;
+            border: 1px solid rgba(255,55,95,0.35);
+        }
+
+        .critical-indicator {
+            width: 11px;
+            height: 11px;
+            background: #ff375f;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            animation: heartbeat 1s infinite;
+            box-shadow: 0 0 8px rgba(255,55,95,0.9);
+        }
+
+        .ekg-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 10px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .pill {
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-size: 9px;
+        }
+
+        /* Bewegungsstadien Screen */
+        .movement-screen {
+            padding: 18px 18px 32px;
+            color: #fff;
+        }
+
+        .movement-header {
+            text-align: center;
+            margin-bottom: 18px;
+            animation: slideInUp 0.3s ease;
+        }
+
+        .movement-header h2 {
+            font-size: 17px;
+            margin-bottom: 4px;
+        }
+
+        .movement-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .stage-card {
+            background: linear-gradient(135deg, #4ecdc4, #44a3a5);
+            border-radius: 18px;
+            padding: 16px;
+            margin: 9px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            animation: slideInUp 0.35s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fix: Animation-Delay auf Basis der Reihenfolge innerhalb movement-screen */
+        .movement-screen .stage-card:nth-of-type(1) { animation-delay: 0.05s; }
+        .movement-screen .stage-card:nth-of-type(2) { animation-delay: 0.1s; }
+        .movement-screen .stage-card:nth-of-type(3) { animation-delay: 0.15s; }
+        .movement-screen .stage-card:nth-of-type(4) { animation-delay: 0.2s; }
+
+        .stage-card::after {
+            content: '';
+            position: absolute;
+            top: -25px;
+            right: -25px;
+            width: 50px;
+            height: 50px;
+            background: radial-gradient(circle, rgba(255,255,255,0.4), transparent 60%);
+            opacity: 0.7;
+        }
+
+        .stage-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 10px 30px rgba(78, 205, 196, 0.4);
+        }
+
+        .stage-card:active {
+            transform: translateX(4px) scale(0.98);
+        }
+
+        .stage-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stage-name {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .stage-time {
+            font-size: 18px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.95);
+        }
+
+        .stage-percentage {
+            font-size: 10px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.26);
+            border-radius: 3px;
+            margin-top: 9px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #fff;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+        }
+
+        /* Vitals Screen */
+        .vitals-screen {
+            padding: 18px;
+            color: #fff;
+        }
+
+        .vitals-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .vitals-header h2 {
+            font-size: 16px;
+            margin-bottom: 4px;
+        }
+
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .vital-card {
+            background: radial-gradient(circle at top, #1f2933, #020617);
+            border-radius: 14px;
+            padding: 10px;
+            border: 1px solid rgba(148,163,184,0.5);
+        }
+
+        .vital-label {
+            font-size: 10px;
+            color: rgba(148,163,184,0.9);
+            margin-bottom: 3px;
+        }
+
+        .vital-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .vital-trend {
+            font-size: 9px;
+            margin-top: 3px;
+            color: #4ade80;
+        }
+
+        /* Medication Screen */
+        .meds-screen {
+            padding: 18px;
+            color: #fff;
+        }
+
+        .meds-header {
+            text-align: center;
+            margin-bottom: 14px;
+        }
+
+        .meds-header h2 {
+            font-size: 16px;
+            margin-bottom: 3px;
+        }
+
+        .meds-sub {
+            font-size: 10px;
+            color: rgba(255,255,255,0.65);
+        }
+
+        .med-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .med-item {
+            background: radial-gradient(circle at top left, #0f172a, #020617);
+            border-radius: 14px;
+            padding: 10px 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        .med-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .med-name {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .med-dose {
+            font-size: 10px;
+            color: rgba(148,163,184,0.9);
+        }
+
+        .med-time {
+            font-size: 11px;
+        }
+
+        .med-badge {
+            font-size: 9px;
+            padding: 3px 6px;
+            border-radius: 999px;
+            border: 1px solid rgba(56,189,248,0.7);
+            color: #7dd3fc;
+            text-align: right;
+            margin-top: 2px;
+        }
+
+        /* Navigation */
+        .nav-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 5;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .dot.active {
+            background: #ff375f;
+            width: 24px;
+            box-shadow: 0 0 10px rgba(255,55,95,0.9);
+        }
+
+        .dot:hover:not(.active)) {
+            transform: scale(1.2);
+            background: rgba(255,255,255,0.6);
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 32px;
+            height: 32px;
+            background: rgba(15,23,42,0.7);
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #fff;
+            font-size: 17px;
+            z-index: 10;
+            border: 1px solid rgba(148,163,184,0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn:hover {
+            background: rgba(15,23,42,0.9);
+            transform: scale(1.08);
+        }
+
+        .back-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Digital Crown */
+        .crown {
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 52px;
+            background: linear-gradient(90deg, #3a3a3a, #1f1f1f);
+            border-radius: 8px 0 0 8px;
+            box-shadow:
+                inset 0 0 5px rgba(0,0,0,0.7),
+                0 0 12px rgba(0,0,0,0.9);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .crown-lines {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        .crown-line {
+            width: 100%;
+            height: 1px;
+            background: #555;
+        }
+
+        .crown:active {
+            transform: translateY(-50%) scale(0.96);
+            box-shadow:
+                inset 0 0 6px rgba(0,0,0,0.8),
+                0 0 6px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+    <div class="watch-container">
+        <!-- Digital Crown (Home Button) -->
+        <div class="crown" id="crown">
+            <div class="crown-lines">
+                <div class="crown-line"></div>
+                <div class="crown-line"></div>
+                <div class="crown-line"></div>
+                <div class="crown-line"></div>
+                <div class="crown-line"></div>
+            </div>
+        </div>
+        
+        <div class="watch-screen">
+            <div class="screen-content">
+                <!-- Home Screen -->
+                <div class="screen active" id="home">
+                    <div class="status-bar">
+                        <span class="time">2:45</span>
+                        <span>❤️ 150 BPM</span>
+                    </div>
+                    
+                    <div class="home-screen">
+                        <div class="profile-card">
+                            <div class="profile-icon">👤</div>
+                            <h2>Notfallkontakt</h2>
+                            <p>Name • Adler • Vereinbarungen • Medikamente</p>
+                            <div class="profile-tagline">Sofort für Ersthelfer sichtbar</div>
+                        </div>
+                        
+                        <div class="app-grid">
+                            <div class="app-icon icon-health" data-screen="ekg">
+                                <div class="app-glow"></div>
+                                <span>💓</span>
+                                <div class="app-label">EKG</div>
+                            </div>
+                            <div class="app-icon icon-medication" data-screen="meds">
+                                <div class="app-glow"></div>
+                                <span>💊</span>
+                                <div class="app-label">Meds</div>
+                            </div>
+                            <div class="app-icon icon-exercise" data-screen="movement">
+                                <div class="app-glow"></div>
+                                <span>🏃</span>
+                                <div class="app-label">Bewegung</div>
+                            </div>
+                           
+                        </div>
+                    </div>
+                    
+                    <div class="nav-dots">
+                        <div class="dot active" data-screen="home"></div>
+                        <div class="dot" data-screen="ekg"></div>
+                        <div class="dot" data-screen="movement"></div>
+                    </div>
+                </div>
+
+                <!-- EKG Screen -->
+                <div class="screen" id="ekg">
+                    <div class="back-btn" data-back="home">←</div>
+                    <div class="status-bar">
+                        <span class="time">2:45</span>
+                        <span>🔴 REC</span>
+                    </div>
+                    
+                    <div class="scroll-area">
+                        <div class="ekg-screen">
+                            <div class="ekg-header">
+                                <h2>2urick EKGs</h2>
+                                <div class="ekg-value" id="bpmValue">150</div>
+                                <div class="ekg-label">BPM</div>
+                            </div>
+                            
+                            <div class="ekg-graph">
+                                <div class="ekg-grid"></div>
+                                <div class="ekg-line"></div>
+                            </div>
+                            
+                            <div class="ekg-status">
+                                <span class="critical-indicator"></span>
+                                <strong>Kritischer Zustand</strong> – sofortige ärztliche Abklärung empfohlen.
+                                <div class="ekg-meta">
+                                    <div class="pill">Ø HRV: 22 ms</div>
+                                    <div class="pill">Letztes EKG: vor 3 Min</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Movement Screen -->
+                <div class="screen" id="movement">
+                    <div class="back-btn" data-back="home">←</div>
+                    <div class="status-bar">
+                        <span class="time">2:45</span>
+                        <span>📊</span>
+                    </div>
+                    
+                    <div class="scroll-area">
+                        <div class="movement-screen">
+                            <div class="movement-header">
+                                <h2>Bewegungsstadien</h2>
+                                <div class="movement-sub">Letzte 30 Minuten • Live aktualisiert</div>
+                            </div>
+                            
+                            <div class="stage-card">
+                                <div class="stage-info">
+                                    <div>
+                                        <div class="stage-name">2urick Laufen</div>
+                                        <div class="stage-percentage">Ø Intensität: 100</div>
+                                    </div>
+                                    <div class="stage-time">0:00</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 0%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stage-card">
+                                <div class="stage-info">
+                                    <div>
+                                        <div class="stage-name">Gehen</div>
+                                        <div class="stage-percentage">Ø Intensität: 98</div>
+                                    </div>
+                                    <div class="stage-time">0:25</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stage-card">
+                                <div class="stage-info">
+                                    <div>
+                                        <div class="stage-name">Schwimmen</div>
+                                        <div class="stage-percentage">Ø Intensität: 85</div>
+                                    </div>
+                                    <div class="stage-time">8:35</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="stage-card">
+                                <div class="stage-info">
+                                    <div>
+                                        <div class="stage-name">Gehen</div>
+                                        <div class="stage-percentage">Ø Intensität: 35</div>
+                                    </div>
+                                    <div class="stage-time">8:35</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 35%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vitals Screen -->
+                <div class="screen" id="vitals">
+                    <div class="back-btn" data-back="home">←</div>
+                    <div class="status-bar">
+                        <span class="time">2:45</span>
+                        <span>🧬</span>
+                    </div>
+
+                    <div class="scroll-area">
+                        <div class="vitals-screen">
+                            <div class="vitals-header">
+                                <h2>Vitalwerte</h2>
+                                <div class="movement-sub">Live Snapshot</div>
+                            </div>
+
+                            <div class="vitals-grid">
+                                <div class="vital-card">
+                                    <div class="vital-label">Blutdruck</div>
+                                    <div class="vital-value">142/95</div>
+                                    <div class="vital-trend">▲ leicht erhöht</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">SpO₂</div>
+                                    <div class="vital-value">97%</div>
+                                    <div class="vital-trend">● stabil</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Atemfrequenz</div>
+                                    <div class="vital-value">21/min</div>
+                                    <div class="vital-trend">▲ über Basis</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Temperatur</div>
+                                    <div class="vital-value">37.8°C</div>
+                                    <div class="vital-trend">▲ leicht erhöht</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medication Screen -->
+                <div class="screen" id="meds">
+                    <div class="back-btn" data-back="home">←</div>
+                    <div class="status-bar">
+                        <span class="time">2:45</span>
+                        <span>💊</span>
+                    </div>
+
+                    <div class="scroll-area">
+                        <div class="meds-screen">
+                            <div class="meds-header">
+                                <h2>Medikamente</h2>
+                                <div class="meds-sub">Heutige Einnahmen & Notfallplan</div>
+                            </div>
+
+                            <div class="med-list">
+                                <div class="med-item">
+                                    <div class="med-left">
+                                        <div class="med-name">Beta-Blocker</div>
+                                        <div class="med-dose">2x täglich • 50 mg</div>
+                                    </div>
+                                    <div>
+                                        <div class="med-time">Nächste: 18:30</div>
+                                        <div class="med-badge">geplant</div>
+                                    </div>
+                                </div>
+
+                                <div class="med-item">
+                                    <div class="med-left">
+                                        <div class="med-name">Blutverdünner</div>
+                                        <div class="med-dose">1x täglich • 20 mg</div>
+                                    </div>
+                                    <div>
+                                        <div class="med-time">Heute • 08:00</div>
+                                        <div class="med-badge">genommen</div>
+                                    </div>
+                                </div>
+
+                                <div class="med-item">
+                                    <div class="med-left">
+                                        <div class="med-name">Bedarfs-Medikation</div>
+                                        <div class="med-dose">Nitro-Spray</div>
+                                    </div>
+                                    <div>
+                                        <div class="med-time">Nur im Notfall</div>
+                                        <div class="med-badge">Info</div>
+                                    </div>
+                                </div>
+
+                                <!-- Extra-Item zum Scrollen provozieren -->
+                                <div class="med-item">
+                                    <div class="med-left">
+                                        <div class="med-name">Backup-Medikation</div>
+                                        <div class="med-dose">Reservepackung</div>
+                                    </div>
+                                    <div>
+                                        <div class="med-time">Im Rucksack</div>
+                                        <div class="med-badge">Backup</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Screens mit Dots verknüpfen
+        const screenOrder = ['home', 'ekg', 'movement'];
+        const dots = document.querySelectorAll('.dot');
+        const screens = document.querySelectorAll('.screen');
+        const crown = document.getElementById('crown');
+
+        function setActiveDot(screenId) {
+            const index = screenOrder.indexOf(screenId);
+            dots.forEach(dot => dot.classList.remove('active'));
+            if (index >= 0) {
+                dots[index].classList.add('active');
+            }
+        }
+
+        function showScreen(screenId) {
+            screens.forEach(s => s.classList.remove('active'));
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.classList.add('active');
+            }
+            setActiveDot(screenId);
+        }
+
+        // Home Icons → Screens
+        document.querySelectorAll('.app-icon[data-screen]').forEach(icon => {
+            icon.addEventListener('click', () => {
+                const target = icon.getAttribute('data-screen');
+                showScreen(target);
+            });
+        });
+
+        // Back Buttons
+        document.querySelectorAll('.back-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-back') || 'home';
+                showScreen(target);
+            });
+        });
+
+        // Navigation Dots
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const target = dot.getAttribute('data-screen');
+                if (target) showScreen(target);
+            });
+        });
+
+        // Crown → Home
+        crown.addEventListener('click', () => {
+            showScreen('home');
+        });
+
+        // BPM Animation
+        let bpm = 150;
+        const bpmEl = document.getElementById('bpmValue');
+
+        setInterval(() => {
+            bpm = 145 + Math.floor(Math.random() * 10);
+            if (bpmEl) {
+                bpmEl.style.transform = 'scale(1.1)';
+                bpmEl.textContent = bpm;
+                setTimeout(() => {
+                    bpmEl.style.transform = 'scale(1)';
+                }, 120);
+            }
+        }, 1500);
+
+        // Progress Bars Animation (Movement Screen)
+        setTimeout(() => {
+            const fills = document.querySelectorAll('.progress-fill');
+            fills.forEach(fill => {
+                const finalWidth = fill.style.width || '0%';
+                fill.style.width = '0%';
+                setTimeout(() => {
+                    fill.style.width = finalWidth;
+                }, 80);
+            });
+        }, 400);
+    </script>
+</body>
+</html>
